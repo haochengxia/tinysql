@@ -71,7 +71,23 @@ func EncodeRowKeyWithHandle(tableID int64, handle int64) kv.Key {
 
 // DecodeRecordKey decodes the key and gets the tableID, handle.
 func DecodeRecordKey(key kv.Key) (tableID int64, handle int64, err error) {
-	/* Your code here */
+	/* My code start */
+	if len(key) != RecordRowKeyLen {
+		return 0, 0, errors.New("illegal key length")
+	}
+
+	buf := key
+	_, handle, err = codec.DecodeInt(buf[len(buf)-8 : len(buf)])
+	if err != nil {
+		return 0, 0, errors.Trace(err)
+	}
+
+	buf = buf[:len(buf)-8]
+	_, tableID, err = codec.DecodeInt(buf[tablePrefixLength:])
+	if err != nil {
+		return 0, 0, errors.Trace(err)
+	}
+	/* My code end */
 	return
 }
 
@@ -94,7 +110,21 @@ func EncodeIndexSeekKey(tableID int64, idxID int64, encodedValue []byte) kv.Key 
 
 // DecodeIndexKeyPrefix decodes the key and gets the tableID, indexID, indexValues.
 func DecodeIndexKeyPrefix(key kv.Key) (tableID int64, indexID int64, indexValues []byte, err error) {
-	/* Your code here */
+	/* My code start */
+	indexValues = key[prefixLen+idLen:]
+
+	buf := key[:prefixLen+idLen]
+	_, indexID, err = codec.DecodeInt(buf[len(buf)-8 : len(buf)])
+	if err != nil {
+		return 0, 0, nil, errors.Trace(err)
+	}
+
+	buf = buf[:len(buf)-8]
+	_, tableID, err = codec.DecodeInt(buf[tablePrefixLength:])
+	if err != nil {
+		return 0, 0, nil, errors.Trace(err)
+	}
+	/* My code end */
 	return tableID, indexID, indexValues, nil
 }
 
