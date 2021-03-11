@@ -111,6 +111,10 @@ func EncodeIndexSeekKey(tableID int64, idxID int64, encodedValue []byte) kv.Key 
 // DecodeIndexKeyPrefix decodes the key and gets the tableID, indexID, indexValues.
 func DecodeIndexKeyPrefix(key kv.Key) (tableID int64, indexID int64, indexValues []byte, err error) {
 	/* My code start */
+	if len(key) < prefixLen+idLen {
+		return 0, 0, nil, errors.New("illegal key length")
+	}
+
 	indexValues = key[prefixLen+idLen:]
 
 	buf := key[:prefixLen+idLen]
