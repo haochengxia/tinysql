@@ -19,6 +19,27 @@
 
 ### 2.1 分析
 
+修改`onDropColumn`函数，基本逻辑可以按照`onAddColumn`逆推。
+
+`colInfo.State`的经历以下四个阶段，起始为`StatePublic`：
+1. StatePublic
+   将状态转变为StateWriteOnly，并更新`tblInfo.Columns`将删除的列移动至最后；
+2. StateWriteOnly
+   将状态转变为StateDeleteOnly；
+3. StateDeleteOnly
+   将状态转变为StateDeleteReorganization；
+4. StateDeleteReorganization → finish job
+   更新`tblInfo.Columns`删除最后的行，结束任务。
+
 ### 2.2 实现
 
+见文件[column.go](../../ddl/column.go#L217-L268).
+
 ### 2.3 结果
+
+```bash
+$ go test . -check.f TestDropColumn #-v
+ok      github.com/pingcap/tidb/ddl     0.721s
+$ go test . -check.f TestColumnChange #-v
+ok      github.com/pingcap/tidb/ddl     0.631s
+```
